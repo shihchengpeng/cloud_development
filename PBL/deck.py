@@ -88,8 +88,8 @@ class Old_maid():
         self.sort_hands()
         self.delete_cards()
         
-    
 
+"""
 maid = Old_maid(4)
 maid.sort_hands()
 maid.delete_cards()
@@ -98,6 +98,6 @@ print("########################")
 maid.get_card_from_player(0,1,0)
 print(maid.hands)
 #print(maid.delete_cards())
-
+"""
 
     
