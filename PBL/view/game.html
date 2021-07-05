@@ -20,97 +20,22 @@
     <!-- style="background-image: url('images/poker_background.jpg');" -->
         <div class="container">
             <div class="row mt-3">
-                <div class="col-2 align-self-center">
+                <div class="col-3 align-self-center">
                     <h2 class="text-center">Player2</h2>
-                        <div class="row">
-                        <div class="col-2 px-1" id="poker2_1">
-                            <div class="poker" >
-                                <img src="images/card_back.png" style="max-width: 200%; max-height: 200%" />
-                            </div>
-                        </div>
-                        <div class="col-2 px-1" id="poker2_2">
-                            <div class="poker">
-                                <img src="images/card_back.png" style="max-width: 200%; max-height: 200%" />
-                            </div>
-                        </div>
-                        <div class="col-2 px-1" id="poker2_3">
-                            <div class="poker">
-                                <img src="images/card_back.png" style="max-width: 200%; max-height: 200%" />
-                            </div>
-                        </div>
-                        <div class="col-2 px-1" id="poker2_4">
-                            <div class="poker">
-                                <img src="images/card_back.png" style="max-width: 200%; max-height: 200%" />
-                            </div>
-                        </div>
-                        <div class="col-2 px-1" id="poker2_5">
-                            <div class="poker">
-                                <img src="images/card_back.png" style="max-width: 200%; max-height: 200%" />
-                            </div>
-                        </div>                                                                                        
+                        <div class="row" id="handcard2">
                         </div>
                 </div>
-                <div class="col-8 align-self-center">
+                <div class="col-6 align-self-center">
                     <h2 class="text-center">Player3</h2>
-                        <div class="row justify-content-center">
-                            <div class="col-1 px-0" id="poker3_1">
-                                <div class="poker">
-                                    <img src="images/card_back.png" style="max-width: 100%; max-height: 100%" />
-                                </div>
-                            </div>
-                            <div class="col-1 px-0" id="poker3_2">
-                                <div class="poker">
-                                    <img src="images/card_back.png" style="max-width: 100%; max-height: 100%" />
-                                </div>
-                            </div>
-                            <div class="col-1 px-0" id="poker3_3">
-                                <div class="poker">
-                                    <img src="images/card_back.png" style="max-width: 100%; max-height: 100%" />
-                                </div>
-                            </div>
-                            <div class="col-1 px-0" id="poker3_4">
-                                <div class="poker">
-                                    <img src="images/card_back.png" style="max-width: 100%; max-height: 100%" />
-                                </div>
-                            </div>
-                            <div class="col-1 px-0" id="poker3_5">
-                                <div class="poker">
-                                    <img src="images/card_back.png" style="max-width: 100%; max-height: 100%" />
-                                </div>
-                            </div>                                                                                        
+                        <div class="row justify-content-center" id="handcard3">
                         </div>
                     <div class="text-center">
-                        <img src="images/table.jpg" class="img-fluid" alt="Responsive image"/>
+                        <img src="images/table.jpg" class="img-fluid" alt="Responsive image" id="table"/>
                     </div>
                 </div>
-                <div class="col-2 align-self-center">
+                <div class="col-3 align-self-center">
                     <h2 class="text-center">Player4</h2>
-                    <div class="row">
-                        <div class="col-2 px-1" id="poker4_1">
-                            <div class="poker" >
-                                <img src="images/card_back.png" style="max-width: 200%; max-height: 200%" />
-                            </div>
-                        </div>
-                        <div class="col-2 px-1" id="poker4_2">
-                            <div class="poker">
-                                <img src="images/card_back.png" style="max-width: 200%; max-height: 200%" />
-                            </div>
-                        </div>
-                        <div class="col-2 px-1" id="poker4_3">
-                            <div class="poker">
-                                <img src="images/card_back.png" style="max-width: 200%; max-height: 200%" />
-                            </div>
-                        </div>
-                        <div class="col-2 px-1" id="poker4_4">
-                            <div class="poker">
-                                <img src="images/card_back.png" style="max-width: 200%; max-height: 200%" />
-                            </div>
-                        </div>
-                        <div class="col-2 px-1" id="poker4_5">
-                            <div class="poker">
-                                <img src="images/card_back.png" style="max-width: 200%; max-height: 200%" />
-                            </div>
-                        </div>                                                                                        
+                    <div class="row" id="handcard4">
                     </div>
                 </div>
             </div>
@@ -122,7 +47,8 @@
                 </div>
                 <div class="col-8">
                     <h2 class="text-center">Player1</h2>
-                    <div class="row" id="myHand">                                                                                    
+                    <div class="row" id="handcard1">
+
                     </div>
                 </div>
             </div>
@@ -132,15 +58,5 @@
 </BODY>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script>
-$(document).ready(function(){
-  $('#poker4_1, #poker4_2, #poker4_3, #poker4_4, #poker4_5').click(function(){
-        drawACard(this.id);
-    });
-
-function drawACard(id){
-    $(`#${id}`).remove();
-    $('#myHand').prepend('<div class="col-2 px-1" style="display: inline"> <div class="poker"> <img src="images/poker/joker.jpeg" style="max-width: 100%; max-height: 100%"/> </div></div>');
-}
-});
-</script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="js/game.js"></script>
