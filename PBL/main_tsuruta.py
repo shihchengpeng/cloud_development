@@ -72,7 +72,7 @@ def login():
             doc.save()
             return '''
             <b>Login Sucess. Hello, '''+username+'''..</b><br>
-            <a href="/mypage"><button>MyPage</button></a>
+            <a href="/game"><button>game</button></a>
             <a href="/login"><button>Login</button></a>
             <a href="/signup"><button>Signup</button></a>
             <a href="/logout"><button>Logout</button></a>
@@ -104,7 +104,7 @@ def logout():
 #         user = users[0]
 #         return template('mypage.html', title='MyPage', username=user.username)
 
-@get('/old_maid')
+@get('/game')
 def old_maid():
     cookie_id=request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
@@ -120,10 +120,11 @@ def old_maid():
         #ゲーム側の処理
         #cardsをゲーム側から受け取る
         username = users[0].username
-        return json.dumps(cards)
-        #return template('old_maid.html', title='OLD MAID', username=username, card=json.dumps(cards))
+        #return json.dumps(cards)
+        return template('game.html', title='OLD MAID')
+        #return template('game.html', title='OLD MAID', username=username, card=json.dumps(cards))
 
-@post('/old_maid')
+@post('/game')
 def old_maid():
     cookie_id = request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
@@ -143,8 +144,8 @@ def old_maid():
         return redirect('/old_maid')
     elif usernumber!=turn.value:
         username = Users[0].username
-        return turn.value
-        #return template('old_maid.html', title='OLD_MAID', username=username, turn=turn.value)
+        #return turn.value
+        return template('game.html', title='OLD_MAID', username=username, turn=turn.value)
 
 @get('/waiting_room')
 def waiting_room():
@@ -189,9 +190,10 @@ def win():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
-        return template('win.html', title='WIN', username=username)
+        return template('win.html', title='WIN')
 
-@get('/lose')
+@get('/loss')
+def loss():
     cookie_id = request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
 
@@ -203,7 +205,7 @@ def win():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
-        return template('lose.html', title='LOSE', username=username)
+        return template('loss.html', title='LOSE')
 
 
 if __name__ == '__main__':
