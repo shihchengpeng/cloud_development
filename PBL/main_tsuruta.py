@@ -6,7 +6,7 @@ from mongoengine import connect, Document, ListField, StringField, URLField, Int
 import random
 import json
 
-TEMPLATE_PATH.append('./views')
+TEMPLATE_PATH.append('./view')
 
 class Users(Document):
     username = StringField(required=True, max_length=30)
@@ -29,7 +29,7 @@ except:
 @get('/')
 @get('/signup')
 def index():
-    return template('view/signup.html', title='Signup Page')
+    return template('signup.html', title='Signup Page')
 
 @post('/signup')
 def register():
@@ -54,7 +54,7 @@ def register():
 
 @get('/login')
 def login():
-    return template('view/login.html', title='Login Page')
+    return template('login.html', title='Login Page')
 
 @post('/login')
 def login():
@@ -121,7 +121,7 @@ def old_maid():
         #cardsをゲーム側から受け取る
         username = users[0].username
         #return json.dumps(cards)
-        return template('view/game.html', title='OLD MAID')
+        return template('game.html', title='OLD MAID')
         #return template('game.html', title='OLD MAID', username=username, card=json.dumps(cards))
 
 @post('/game')
@@ -145,7 +145,7 @@ def old_maid():
     elif usernumber!=turn.value:
         username = Users[0].username
         #return turn.value
-        return template('view/game.html', title='OLD_MAID', username=username, turn=turn.value)
+        return template('game.html', title='OLD_MAID', username=username, turn=turn.value)
 
 @get('/waiting_room')
 def waiting_room():
@@ -175,7 +175,7 @@ def home():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
-        return template('view/home.html', title='HOME', username=username)
+        return template('home.html', title='HOME', username=username)
 
 @get('/win')
 def win():
@@ -190,7 +190,7 @@ def win():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
-        return template('view/win.html', title='WIN')
+        return template('win.html', title='WIN')
 
 @get('/loss')
 def loss():
@@ -205,7 +205,7 @@ def loss():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
-        return template('view/loss.html', title='LOSE')
+        return template('loss.html', title='LOSE')
 
 
 if __name__ == '__main__':
