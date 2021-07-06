@@ -26,13 +26,13 @@ try:
 except:
     pass
 
-@get('/')
+#@get('/')
 @get('/signup')
-def index():
+def signup():
     return template('signup.html', title='Signup Page')
 
 @post('/signup')
-def register():
+def signup():
     username = request.forms.decode().get('username')
     password = request.forms.decode().get('password')
 
@@ -105,7 +105,7 @@ def logout():
 #         return template('mypage.html', title='MyPage', username=user.username)
 
 @get('/game')
-def old_maid():
+def game():
     cookie_id=request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
     if cookie_id==None or (not bool(users)) : # Cannot find the cookie
@@ -125,7 +125,7 @@ def old_maid():
         #return template('game.html', title='OLD MAID', username=username, card=json.dumps(cards))
 
 @post('/game')
-def old_maid():
+def game():
     cookie_id = request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
 
