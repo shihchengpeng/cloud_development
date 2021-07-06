@@ -28,7 +28,7 @@ except:
 
 @route('/images/<filename:path>')
 def send_static(filename):
-    return static_file(filename, root='./view')
+    return static_file(filename, root='./view/images')
 
 @get('/')
 @get('/signup')
@@ -54,6 +54,11 @@ def register():
     <a href="/login"><button>Go to Login</botton></a>
     <a href="/signup"><button>Go to SignUp</button></a>
     '''
+
+@get('/test_game')
+def login():
+    return template('game.html', title='Test game.html Page')
+
 
 @get('/login')
 def login():
