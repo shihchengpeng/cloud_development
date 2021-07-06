@@ -2,9 +2,10 @@ from ast import Str
 import bottle, jinja2
 from bottle import *
 from bottle import jinja2_template as template
-from mongoengine import connect, Document, ListField, StringField, URLField, IntField
+from mongoengine import connect, Document, ListField, StringField, URLField, IntField, ReferenceField
 import random
 import json
+import deck
 
 TEMPLATE_PATH.append('./view')
 
@@ -14,6 +15,15 @@ class Users(Document):
     cookie = StringField()
     usernumber = IntField() #0-3までの数字で手番を管理する
 
+class Cards(Document):
+    suits = StringField()
+    value = StringField()
+
+class Rooms(Document):
+    password = StringField(required=True, max_length=30)
+    discard = ListField(ReferenceField(Cards))
+    players = ListField()
+
 class Turn():
     def __init__(self):
         self.value = 0
@@ -22,7 +32,7 @@ class Turn():
         return self.value
 
 try:
-    connect(db='prosec', host='localhost', port=27017)
+    connect(db='OldMaid', host='localhost', port=27017)
 except:
     pass
 
@@ -34,6 +44,7 @@ def send_static(filename):
 @get('/signup')
 def index():
     return template('signup.html', title='Signup Page')
+
 @post('/signup')
 def register():
     username = request.forms.decode().get('username')
@@ -43,22 +54,17 @@ def register():
         if doc.username==username :
             return '''
             <b>This username already has been registered.</b><br>
-            <a href="/login"><button>Login</botton></a>
+            <a href="/login"><button>Login</button></a>
             <a href="/signup"><button>Signup</button></a>
             '''
 
     user = Users(username=username, password=password)
     user.save()
     return '''
-    <b>Registered</b><br>
-    <a href="/login"><button>Go to Login</botton></a>
+    <b>Registered.</b><br>
+    <a href="/login"><button>Go to Login</button></a>
     <a href="/signup"><button>Go to SignUp</button></a>
     '''
-
-@get('/test_game')
-def login():
-    return template('game.html', title='Test game.html Page')
-
 
 @get('/login')
 def login():
@@ -80,7 +86,7 @@ def login():
             doc.save()
             return '''
             <b>Login Sucess. Hello, '''+username+'''..</b><br>
-            <a href="/game"><button>game</button></a>
+            <a href="/home"><button>home</button></a>
             <a href="/login"><button>Login</button></a>
             <a href="/signup"><button>Signup</button></a>
             <a href="/logout"><button>Logout</button></a>
@@ -97,25 +103,15 @@ def logout():
     response.delete_cookie('username')
     redirect('/login')
 
-# @get('/mypage')
-# def mypage():
-#     cookie_id = request.get_cookie('cookie_id', secret='key')
-#     users = Users.objects(cookie=cookie_id)
-
-#     if not bool(users) : # Cannnot find the cookie
-#         return '''
-#         <b>Not login error.</b><br>
-#         <a href="/login"><button>Login</button></a>
-#         <a href="/signup"><button>Signup</button></a>
-#         '''
-#     else :
-#         user = users[0]
-#         return template('mypage.html', title='MyPage', username=user.username)
-
 @get('/game')
 def game():
     cookie_id=request.get_cookie('cookie_id', secret='key')
+    #roomPass=request.query.decode().get('roomPass')
+    roomPass='aaa' #/gameにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
     users = Users.objects(cookie=cookie_id)
+    room = Rooms.objects(password=roomPass)
+    print("roomPass = ", roomPass)
+
     if cookie_id==None or (not bool(users)) : # Cannot find the cookie
         return '''
         <b>Not login Error.</b>
@@ -127,6 +123,18 @@ def game():
     else :
         #ゲーム側の処理
         #cardsをゲーム側から受け取る
+        old_maid.sort_hands()
+        old_maid.delete_cards()
+        discard = old_maid.garbage
+        players = old_maid.hands
+        print(discard)
+        print(players)
+        #データベースにdiscardとplayersを格納できなくて困っています
+        room = Rooms(discard=discard, players=players)
+        room.save
+        
+        cards = old_maid.hands
+        json_cards = json.dumps(old_maid.hands)
         username = users[0].username
         #return json.dumps(cards)
         return template('game.html', title='OLD MAID')
@@ -155,8 +163,10 @@ def game():
         #return turn.value
         return template('game.html', title='OLD_MAID', username=username, turn=turn.value)
 
-@get('/waiting_room')
-def waiting_room():
+@post('/standby')
+def standby():
+    roomPass=request.forms.decode().get('roomPass')
+    mode = request.forms.decode().get('roomType')
     cookie_id = request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
 
@@ -168,7 +178,31 @@ def waiting_room():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
-        return template('old_maid.html', title='WAITING ROOM', username=username)
+        if mode == 'create':
+            for doc in Rooms.objects :
+                # 既にデータベースがある場合には警告
+                if doc.password==roomPass :
+                    return '''
+                    <b>This roomPass already has registered.</b><br>
+                    <a href="/login"><button>Login</button></a>
+                    <a href="/home"><button>Home</button></a>
+                    '''
+            # データベースにルームを作る
+            room = Rooms(password=roomPass)
+            room.save()
+            return template('standby.html', roomPass=roomPass, username=users[0].username)
+        elif mode == 'join':
+            # そのroomPassの部屋があるか，ないか判定
+            for doc in Rooms.objects :
+                if doc.password==roomPass :
+                    return template('standby.html', roomPass=roomPass, username=users[0].username)
+                else :
+                    # なかったら警告
+                    return '''
+                    <b>This roomPass is not registered.</b><br>
+                    <a href="/login"><button>Login</button></a>
+                    <a href="/home"><button>Home</button></a>
+                    '''
 
 @get('/home')
 def home():
@@ -183,7 +217,7 @@ def home():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
-        return template('home.html', title='HOME', username=username)
+        return template('home.html', isLogin=True, name=users[0].username)
 
 @get('/win')
 def win():
@@ -218,4 +252,5 @@ def loss():
 
 if __name__ == '__main__':
     turn = Turn()
+    old_maid = deck.Old_maid(4)
     run(host='0.0.0.0', port=8082, reloader=True, debug=True)
