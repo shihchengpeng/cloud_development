@@ -26,6 +26,10 @@ try:
 except:
     pass
 
+@route('/images/<filename:path>')
+def send_static(filename):
+    return static_file(filename, root='./view')
+
 @get('/')
 @get('/signup')
 def index():
