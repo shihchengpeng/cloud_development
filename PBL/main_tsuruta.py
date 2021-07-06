@@ -141,7 +141,7 @@ def game():
         #クライアントからjson形式のデータを受け取る
         cards = json.loads(json_cards)
         turn.advance()
-        return redirect('/old_maid')
+        return redirect('/game')
     elif usernumber!=turn.value:
         username = Users[0].username
         #return turn.value
