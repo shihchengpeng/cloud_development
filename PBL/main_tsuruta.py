@@ -26,13 +26,12 @@ try:
 except:
     pass
 
-#@get('/')
+@get('/')
 @get('/signup')
-def signup():
+def index():
     return template('signup.html', title='Signup Page')
-
 @post('/signup')
-def signup():
+def register():
     username = request.forms.decode().get('username')
     password = request.forms.decode().get('password')
 
@@ -40,15 +39,15 @@ def signup():
         if doc.username==username :
             return '''
             <b>This username already has been registered.</b><br>
-            <a href="/login"><button>Login</button></a>
+            <a href="/login"><button>Login</botton></a>
             <a href="/signup"><button>Signup</button></a>
             '''
 
     user = Users(username=username, password=password)
     user.save()
     return '''
-    <b>Registered.</b><br>
-    <a href="/login"><button>Go to Login</button></a>
+    <b>Registered</b><br>
+    <a href="/login"><button>Go to Login</botton></a>
     <a href="/signup"><button>Go to SignUp</button></a>
     '''
 
