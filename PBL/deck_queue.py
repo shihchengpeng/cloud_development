@@ -156,8 +156,6 @@ def main():
     #while not old_maid.player_queue.empty():
     while not old_maid.end_game():
         print("")
-        with old_maid.player_queue.mutex:
-            print(old_maid.player_queue.queue)
         print("to:"+ str(to_player) + " from :"+ str(from_player))
         from_len = len(old_maid.dic[from_player])
         if from_len!= 1:
@@ -169,10 +167,9 @@ def main():
         print("################  after exchange  #######################################")
         pprint.pprint(old_maid.dic)
         old_maid.check_win()
-        print(old_maid.get_all_num())
 
         if (old_maid.end_game()):
-            print(old_maid.winplayers)
+            print("勝者順 : " + str(old_maid.winplayers))
             print("finish")
             break
 
