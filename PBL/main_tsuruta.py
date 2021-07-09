@@ -5,7 +5,7 @@ from bottle import jinja2_template as template
 from mongoengine import connect, Document, ListField, StringField, URLField, IntField, ReferenceField
 import random
 import json
-import deck
+import deck_queue
 
 TEMPLATE_PATH.append('./view')
 
@@ -35,6 +35,10 @@ try:
     connect(db='OldMaid', host='localhost', port=27017)
 except:
     pass
+
+@route('/js/<filename:path>')
+def send_static(filename):
+    return static_file(filename, root='./view/js')
 
 @route('/images/<filename:path>')
 def send_static(filename):
@@ -252,5 +256,6 @@ def loss():
 
 if __name__ == '__main__':
     turn = Turn()
-    old_maid = deck.Old_maid(4)
+    #old_maid = deck.Old_maid(4)
+    old_maid = deck_queue.Old_maid(4)
     run(host='0.0.0.0', port=8082, reloader=True, debug=True)
