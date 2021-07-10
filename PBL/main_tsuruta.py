@@ -130,6 +130,7 @@ def game():
         json_discard = json.dumps(old_maid.garbage)
         json_players = json.dumps(old_maid.hands)
 
+
         P1_card = old_maid.hands[0]
         P2_num = len(old_maid.hands[1])
         P3_num = len(old_maid.hands[2])
@@ -139,6 +140,11 @@ def game():
 
         for doc in Rooms.objects:
             print(doc.password)
+
+        
+        username = users[0].username
+
+        for doc in Rooms.objects:
             if doc.password==roomPass: #部屋検索
                 print(doc.password)
                 doc.discard=old_maid.garbage
@@ -150,9 +156,8 @@ def game():
                 discard=json.dumps(old_maid.garbage)
                 players=json.dumps(old_maid.hands)
 
-                return template('game.html', title='OLD MAID', username=username, P1_card=Markup(json.dumps(P1_card)), P2_num=P2_num, P3_num=P3_num, P4_card=Markup(json.dumps(P4_card)))
                 #return template('game.html')
-                # return template('game.html', discard, players)
+                return template('game.html', title='OLD MAID', username=username, P1_card=Markup(json.dumps(P1_card)), P2_num=P2_num, P3_num=P3_num, P4_card=Markup(json.dumps(P4_card)))
             else:
                 return '''
                 <b>This roomPass is not registered.</b><br>
