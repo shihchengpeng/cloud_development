@@ -2,7 +2,7 @@ from ast import Str
 import bottle, jinja2
 from bottle import *
 from bottle import jinja2_template as template
-from mongoengine import connect, Document, ListField, StringField, URLField, IntField, ReferenceField
+from mongoengine import connect, Document, ListField, StringField, URLField, IntField
 import random
 import json
 import deck_queue
@@ -15,13 +15,9 @@ class Users(Document):
     cookie = StringField()
     usernumber = IntField() #0-3までの数字で手番を管理する
 
-class Cards(Document):
-    suits = StringField()
-    value = StringField()
-
 class Rooms(Document):
     password = StringField(required=True, max_length=30)
-    discard = ListField(ReferenceField(Cards))
+    discard = ListField()
     players = ListField()
 
 class Turn():
@@ -113,7 +109,6 @@ def game():
     #roomPass=request.query.decode().get('roomPass')
     roomPass='aaa' #/gameにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
     users = Users.objects(cookie=cookie_id)
-    room = Rooms.objects(password=roomPass)
     print("roomPass = ", roomPass)
 
     if cookie_id==None or (not bool(users)) : # Cannot find the cookie
@@ -129,20 +124,31 @@ def game():
         #cardsをゲーム側から受け取る
         old_maid.sort_hands()
         old_maid.delete_cards()
-        discard = old_maid.garbage
-        players = old_maid.hands
-        print(discard)
-        print(players)
-        #データベースにdiscardとplayersを格納できなくて困っています
-        room = Rooms(discard=discard, players=players)
-        room.save
+
+        json_discard = json.dumps(old_maid.garbage)
+        json_players = json.dumps(old_maid.hands)
         
-        cards = old_maid.hands
-        json_cards = json.dumps(old_maid.hands)
         username = users[0].username
-        #return json.dumps(cards)
-        return template('game.html', title='OLD MAID')
-        #return template('game.html', title='OLD MAID', username=username, card=json.dumps(cards))
+
+        for doc in Rooms.objects:
+            if doc.password==roomPass: #部屋検索
+                print(doc.password)
+                doc.discard=old_maid.garbage
+                doc.players=old_maid.hands
+                print(doc.discard)
+                print(doc.players)
+                doc.save()
+                #return json.dumps(cards)
+                discard=json.dumps(old_maid.garbage)
+                players=json.dumps(old_maid.hands)
+                return template('game.html')
+                # return template('game.html', discard, players)
+            else:
+                return '''
+                <b>This roomPass is not registered.</b><br>
+                <a href="/login"><button>Login</button></a>
+                <a href="/home"><button>Home</button></a>
+                '''
 
 @post('/game')
 def game():
