@@ -111,6 +111,7 @@ def game():
     #roomPass=request.query.decode().get('roomPass')
     roomPass='aaa' #/gameにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
     users = Users.objects(cookie=cookie_id)
+    print("This is GET")
     print("roomPass = ", roomPass)
 
     if cookie_id==None or (not bool(users)) : # Cannot find the cookie
@@ -127,34 +128,32 @@ def game():
         old_maid.sort_hands()
         old_maid.delete_cards()
 
-        json_discard = json.dumps(old_maid.garbage)
-        json_players = json.dumps(old_maid.hands)
+        #json_discard = json.dumps(old_maid.garbage)
+        #json_players = json.dumps(old_maid.hands)
 
-
-        P1_card = old_maid.hands[0]
-        P2_num = len(old_maid.hands[1])
-        P3_num = len(old_maid.hands[2])
-        P4_card = old_maid.hands[3]
+        P1_card = old_maid.dic[0]
+        P2_num = len(old_maid.dic[1])
+        P3_num = len(old_maid.dic[2])
+        P4_card = old_maid.dic[3]
 
         username = users[0].username
 
         for doc in Rooms.objects:
-            print(doc.password)
-
-        
-        username = users[0].username
+            print("password: "+doc.password)
 
         for doc in Rooms.objects:
             if doc.password==roomPass: #部屋検索
-                print(doc.password)
                 doc.discard=old_maid.garbage
-                doc.players=old_maid.hands
+                doc.players= list(old_maid.dic.values())
+                #doc.players=old_maid.dic
+                
                 print(doc.discard)
                 print(doc.players)
+                pprint.pprint(old_maid.dic)
                 doc.save()
                 #return json.dumps(cards)
-                discard=json.dumps(old_maid.garbage)
-                players=json.dumps(old_maid.hands)
+                #discard=json.dumps(old_maid.garbage)
+                #players=json.dumps(old_maid.hands)
 
                 #return template('game.html')
                 return template('game.html', title='OLD MAID', username=username, P1_card=Markup(json.dumps(P1_card)), P2_num=P2_num, P3_num=P3_num, P4_card=Markup(json.dumps(P4_card)))
@@ -167,14 +166,13 @@ def game():
 
 @post('/game')
 def game():
+    print("This is POST")
     cookie_id = request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
     usernumber = int(request.forms['getCardPlayer']);
-
+    
     print(usernumber)
     print(turn.value)
-    print(type(usernumber))
-    print(type(turn.value))
 
     if cookie_id==None or (not bool(users)) :
         return '''
@@ -188,16 +186,13 @@ def game():
         #クライアントからjson形式のデータを受け取る
         lossCardPlayer = int(request.forms['lossCardPlayer']);
         cards = int(request.forms['drawnCardID']);
-        #print(usernumber);
-        #print(lossCardPlayer);
-        #print(cards);
         turn.advance()
         #print(old_maid.hands)  
         #pprint.pprint(old_maid.dic)
         old_maid.new_get_card_from_player(usernumber, lossCardPlayer, cards);
         #print(old_maid.hands)　変わっていない
         #pprint.pprint(old_maid.dic)　変わった
-        #return redirect('/game')
+        return redirect('/game')
     elif usernumber!=turn.value:
         username = users[0].username
         #print(username)
