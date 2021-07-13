@@ -3,7 +3,7 @@ import bottle, jinja2
 from bottle import *
 from bottle import jinja2_template as template
 from jinja2 import Markup
-from mongoengine import connect, Document, ListField, StringField, URLField, IntField
+from mongoengine import connect, Document, ListField, StringField, URLField, IntField, queryset
 import random
 import json
 import deck_queue
@@ -19,6 +19,7 @@ class Users(Document):
 
 class Rooms(Document):
     password = StringField(required=True, max_length=30)
+    member = IntField()
     discard = ListField()
     players = ListField()
 
@@ -79,8 +80,6 @@ def login():
 
     for doc in Users.objects :
         if doc.username==username and doc.password==password :
-            print(username)#test
-            print(password)
             cookie_id = 'user('+str(username)+')'
             response.set_cookie('cookie_id', cookie_id, secret='key')
             doc.cookie = cookie_id
@@ -157,12 +156,12 @@ def game():
 
                 #return template('game.html')
                 return template('game.html', title='OLD MAID', username=username, P1_card=Markup(json.dumps(P1_card)), P2_num=P2_num, P3_num=P3_num, P4_card=Markup(json.dumps(P4_card)))
-            else:
-                return '''
-                <b>This roomPass is not registered.</b><br>
-                <a href="/login"><button>Login</button></a>
-                <a href="/home"><button>Home</button></a>
-                '''
+
+        return '''
+        <b>This roomPass is not registered.</b><br>
+        <a href="/login"><button>Login</button></a>
+        <a href="/home"><button>Home</button></a>
+        '''
 
 @post('/game')
 def game():
@@ -217,6 +216,7 @@ def standby():
         if mode == 'create':
             for doc in Rooms.objects :
                 # 既にデータベースがある場合には警告
+                print(doc)
                 if doc.password==roomPass :
                     return '''
                     <b>This roomPass already has registered.</b><br>
@@ -224,21 +224,30 @@ def standby():
                     <a href="/home"><button>Home</button></a>
                     '''
             # データベースにルームを作る
-            room = Rooms(password=roomPass)
+            room = Rooms(password=roomPass, member=1)
             room.save()
             return template('standby.html', roomPass=roomPass, username=users[0].username)
+            # return template('standby.html', roomPass=roomPass, username=users[0].username, member=room[0].member)
         elif mode == 'join':
-            # そのroomPassの部屋があるか，ないか判定
             for doc in Rooms.objects :
-                if doc.password==roomPass :
-                    return template('standby.html', roomPass=roomPass, username=users[0].username)
-                else :
-                    # なかったら警告
-                    return '''
-                    <b>This roomPass is not registered.</b><br>
-                    <a href="/login"><button>Login</button></a>
-                    <a href="/home"><button>Home</button></a>
-                    '''
+                if doc.password==roomPass : # そのroomPassの部屋があるか判定
+                    if doc.member<4 : # 部屋が4人未満か判定
+                        doc.update(inc__member=1) #doc.memberをインクリメント
+                        doc.save()
+                        return template('standby.html', roomPass=roomPass, username=users[0].username)
+                        # return template('standby.html', roomPass=roomPass, username=users[0].username, member=room[0].member)
+                    else :
+                        return '''
+                        <b>This roomPass is full.</b><br>
+                        <a href="/login"><button>Login</button></a>
+                        <a href="/home"><button>Home</button></a>
+                        '''
+            # なかったら警告
+            return '''
+            <b>This roomPass is not registered.</b><br>
+            <a href="/login"><button>Login</button></a>
+            <a href="/home"><button>Home</button></a>
+            '''
 
 @get('/home')
 def home():
@@ -259,6 +268,8 @@ def home():
 def win():
     cookie_id = request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
+    #roomPass=request.query.decode().get('roomPass')
+    roomPass='aaa' #/winにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
 
     if cookie_id==None or (not bool(users)) : 
         return '''
@@ -268,12 +279,17 @@ def win():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
+        for doc in Rooms.objects:
+            if doc.password==roomPass:
+                doc.delete()
         return template('win.html', title='WIN')
 
 @get('/loss')
 def loss():
     cookie_id = request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
+    #roomPass=request.query.decode().get('roomPass')
+    roomPass='aaa' #/lossにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
 
     if cookie_id==None or (not bool(users)) : 
         return '''
@@ -283,6 +299,9 @@ def loss():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
+        for doc in Rooms.objects:
+            if doc.password==roomPass:
+                doc.delete()
         return template('loss.html', title='LOSE')
 
 
