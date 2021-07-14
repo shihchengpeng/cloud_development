@@ -19,9 +19,9 @@ class Users(Document):
 
 class Rooms(Document):
     password = StringField(required=True, max_length=30)
-    member = IntField()
     discard = ListField()
     players = ListField()
+    player_names = ListField()  # ルーム内のプレイヤー名を保持
 
 class Turn():
     def __init__(self):
@@ -107,8 +107,8 @@ def logout():
 @get('/game')
 def game():
     cookie_id=request.get_cookie('cookie_id', secret='key')
-    #roomPass=request.query.decode().get('roomPass')
-    roomPass='aaa' #/gameにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
+    roomPass=request.query.roomPass
+    # roomPass='aaa' #/gameにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
     users = Users.objects(cookie=cookie_id)
     print("This is GET")
     print("roomPass = ", roomPass)
@@ -198,6 +198,10 @@ def game():
         #return turn.value
         return template('game.html', title='OLD_MAID', username=users[0].username, turn=turn.value)
 
+@get('/standby')
+def standby():
+    return """不正な画面遷移です"""
+
 @post('/standby')
 def standby():
     roomPass=request.forms.decode().get('roomPass')
@@ -224,30 +228,16 @@ def standby():
                     <a href="/home"><button>Home</button></a>
                     '''
             # データベースにルームを作る
-            room = Rooms(password=roomPass, member=1)
+            room = Rooms(password=roomPass, player_names=[users[0].username])
             room.save()
-            
-            myroom = Rooms.objects(password=roomPass)
-            Users.objects(username= users[0].username).update_one(
-                set__usernumber = str(myroom[0].member),
-                upsert = False)
-            print(myroom[0].member)
-
-            return template('standby.html', roomPass=roomPass, username=users[0].username)
-            # return template('standby.html', roomPass=roomPass, username=users[0].username, member=room[0].member)
+            return template('standby.html', roomPass=roomPass, username=users[0].username, players=room.player_names)
         elif mode == 'join':
             for doc in Rooms.objects :
                 if doc.password==roomPass : # そのroomPassの部屋があるか判定
-                    if int(doc.member)<4 : # 部屋が4人未満か判定
-                        doc.update(inc__member=1) #doc.memberをインクリメント
+                    if len(doc.player_names)<4 : # 部屋が4人未満か判定
+                        doc.player_names.append(users[0].username) # プレイヤー名を追加
                         doc.save()
-                        myroom = Rooms.objects(password=roomPass)
-                        Users.objects(username= users[0].username).update_one(
-                            set__usernumber = str(myroom[0].member),
-                            upsert = False)
-                        print(myroom[0].member)
-                        return template('standby.html', roomPass=roomPass, username=users[0].username)
-                        # return template('standby.html', roomPass=roomPass, username=users[0].username, member=room[0].member)
+                        return template('standby.html', roomPass=roomPass, username=users[0].username, players=doc.player_names)
                     else :
                         return '''
                         <b>This roomPass is full.</b><br>
@@ -260,6 +250,30 @@ def standby():
             <a href="/login"><button>Login</button></a>
             <a href="/home"><button>Home</button></a>
             '''
+        elif mode == 'exit':
+            for doc in Rooms.objects :
+                if doc.password==roomPass:
+                    name_list = list(doc.player_names)
+                    # バグで名前が複数ある場合に対応
+                    while users[0].username in name_list:
+                        name_list.remove(users[0].username)
+                    doc.player_names = name_list
+                    doc.save()
+        elif mode == 'check':
+            body = {}
+            for doc in Rooms.objects :
+                if doc.password==roomPass:
+                    print(len(doc.player_names))
+                    for i, player_name in enumerate(doc.player_names):
+                        body[str(i)] = player_name
+            r = bottle.HTTPResponse(body=body, status=200)
+            r.set_header("Content-Type", "application/json")
+            return r
+        elif mode == 'reload':
+            for doc in Rooms.objects :
+                if doc.password==roomPass :
+                    return template('standby.html', roomPass=roomPass, username=users[0].username, players=doc.player_names)
+
 
 @get('/home')
 def home():

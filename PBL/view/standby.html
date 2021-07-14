@@ -16,12 +16,96 @@
         </nav>
         <main class="bd-content p-3" role="main">
             <div class="d-flex flex-column">
-                <h5>Room Pass : {{roomPass}}</h5>
+                <div class="d-flex flex-row">
+                    <h5>Room Pass : </h5><h5 id="roomPass">{{roomPass}}</h5>
+                </div>
+                {% for player in players : %}
+                    <p>{{player}}</p><br>
+                {% endfor %}
             </div>
+            <button type=“button” onclick="let roomPass=document.getElementById('roomPass').textContent;  sendData( {roomType:'exit', roomPass:roomPass} ); location.href='/home';">exit</button>
         </main>
+        
+        <script type="text/javascript">
+            history.pushState(null, null, null);
+            // 戻るボタン押下でイベント発動
+            window.addEventListener("popstate", function() {
+            // 確認メッセージ表示
+            window.onbeforeunload = function(e) {
+            return 'このページから離れますか？';
+            };
+            history.go(1);
+            history.pushState(null, null, null);
+            });
 
+            function sendData(data) {
+                const XHR = new XMLHttpRequest(),
+                        FD  = new FormData();
+
+                // データを FormData オブジェクトに投入
+                for(name in data) {
+                    FD.append(name, data[name]);
+                }
+
+                // データが正常に送信された場合に行うことを定義
+                XHR.addEventListener('load', function(event) {
+                    // this　にレスポンスが入る
+                    if (this.response != ''){
+                        let response = this.response;
+                        // 保存しておいた以前の結果を読み出し
+                        var pre_players = sessionStorage.getItem("pre_players");
+                        if (response != pre_players){
+                            // レスポンスを保持
+                            sessionStorage.setItem("pre_players", response);
+                            const form = document.createElement('form');
+                            form.method = "POST";
+                            form.action = "/standby";
+
+                            const name_list = ['roomType', 'roomPass'];
+                            const value_list = ['reload', data['roomPass']];
+                            for (i=0; i<2; i++){
+                                const hiddenField = document.createElement('input');
+                                hiddenField.type = 'hidden';
+                                hiddenField.name = name_list[i];
+                                hiddenField.value = value_list[i];
+
+                                form.appendChild(hiddenField);
+                            }
+                            document.body.appendChild(form);
+                            form.submit();
+                        }
+                        // 人数が４人になった場合
+                        else if (Object.keys(JSON.parse(response)).length == 4){
+                            console.log(data["roomPass"])
+                            window.location.href = "/game?roomPass=" + data["roomPass"]
+                        }
+                    }
+                });
+
+                // エラーが発生した場合に行うことを定義
+                XHR.addEventListener('error', function(event) {
+                    console.log('Oups! Something goes wrong.');
+                });
+
+                // リクエストをセットアップ
+                XHR.open('POST', '/standby');
+
+                // FormData オブジェクトを送信するだけです。HTTP ヘッダは自動的に設定
+                XHR.send(FD);
+            }
+
+            // ２秒毎にデータベースの変更をチェック
+            setInterval(()=>{
+                let roomPass = document.getElementById('roomPass').textContent; 
+                console.log(roomPass);
+                sendData( {roomType:'check', roomPass:roomPass} );
+            }, 2000)
+
+
+        </script>
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     </body>
+    
 </html>
