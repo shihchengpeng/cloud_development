@@ -226,14 +226,26 @@ def standby():
             # データベースにルームを作る
             room = Rooms(password=roomPass, member=1)
             room.save()
+            
+            myroom = Rooms.objects(password=roomPass)
+            Users.objects(username= users[0].username).update_one(
+                set__usernumber = str(myroom[0].member),
+                upsert = False)
+            print(myroom[0].member)
+
             return template('standby.html', roomPass=roomPass, username=users[0].username)
             # return template('standby.html', roomPass=roomPass, username=users[0].username, member=room[0].member)
         elif mode == 'join':
             for doc in Rooms.objects :
                 if doc.password==roomPass : # そのroomPassの部屋があるか判定
-                    if doc.member<4 : # 部屋が4人未満か判定
+                    if int(doc.member)<4 : # 部屋が4人未満か判定
                         doc.update(inc__member=1) #doc.memberをインクリメント
                         doc.save()
+                        myroom = Rooms.objects(password=roomPass)
+                        Users.objects(username= users[0].username).update_one(
+                            set__usernumber = str(myroom[0].member),
+                            upsert = False)
+                        print(myroom[0].member)
                         return template('standby.html', roomPass=roomPass, username=users[0].username)
                         # return template('standby.html', roomPass=roomPass, username=users[0].username, member=room[0].member)
                     else :
