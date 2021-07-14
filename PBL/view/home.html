@@ -19,6 +19,7 @@
 
                 <div class="d-flex flex-row-reverse m-2">
                     {% if isLogin: %}
+                        <a href="/logout">: logout</a>
                         <p class="text-dark">Hello, {{name}} </p>
                     {% else: %}
                         <a href="/login"><button class="btn btn-primary">login</button></a>
