@@ -2,6 +2,7 @@
 <HEAD>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="shortcut icon" href="#">
     <link rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
       integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
@@ -18,18 +19,15 @@
             </div>
             <div class="col">
                 <div class="row">
-                    <p class="text-left">勝者：Player2,Player3,Player4</p>
+                    <p class="text-left">勝者順：{{winner}} </p>
                 </div>
                 <div class="row">
-                    <p class="text-left">敗者：Player1</p>
+                    <p class="text-left">敗者：{{loser}}</p>
                 </div>
             </div>
             <div class="row">
                 <div class="col-2 mx-0">
-                    <button type="button" class="btn btn-secondary">再びプレー</button>
-                </div>
-                <div class="col-2 mx-0">
-                    <button type="button" class="btn btn-secondary">ホームページ</button>
+                    <a href="/home" class="btn btn-secondary" role="button">ホームページ</a>
                 </div>
             </div>
             <div class="row">

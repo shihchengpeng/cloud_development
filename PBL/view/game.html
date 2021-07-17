@@ -2,6 +2,7 @@
 <HEAD>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="shortcut icon" href="#">
     <link rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
       integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
@@ -21,12 +22,12 @@
         <div class="container">
             <div class="row mt-3">
                 <div class="col-3 align-self-center">
-                    <h2 class="text-center">Player2</h2>
+                    <h2 class="text-center">{{username[1]}}</h2>
                         <div class="row" id="handcard2">
                         </div>
                 </div>
-                <div class="col-6 align-self-center">
-                    <h2 class="text-center">Player3</h2>
+                <div class="col-5 align-self-center">
+                    <h2 class="text-center">{{username[2]}}</h2>
                         <div class="row justify-content-center" id="handcard3">
                         </div>
                     <div class="text-center">
@@ -34,8 +35,13 @@
                     </div>
                 </div>
                 <div class="col-3 align-self-center">
-                    <h2 class="text-center">Player4</h2>
+                    <h2 class="text-center">{{username[3]}}</h2>
                     <div class="row" id="handcard4">
+                    </div>
+                </div>
+                <div class="col-1" id="turn">
+                    <div class="row">
+                        <p>test</p>
                     </div>
                 </div>
             </div>
@@ -46,7 +52,7 @@
                     </div>
                 </div>
                 <div class="col-8">
-                    <h2 class="text-center">Player1</h2>
+                    <h2 class="text-center" id="mySelf">{{username[0]}}</h2>
                     <div class="row" id="handcard1">
 
                     </div>
@@ -62,7 +68,15 @@
 <script src="js/game.js"></script>
 <script>
     $(document).ready(function () {
-        setCard({{P1_card}},{{P2_num}},{{P3_num}},{{P4_card}});
+        setColor({{isMyTurn}});
+        setCard({{P1_card}},{{P2_card}},{{P3_card}},{{P4_card}});
+        setDrag();
+        setDrop({{isMyTurn}});
+        sessionStorage.setItem("lastDrop", "1");
+        setInterval(ajaxCall,5000);
+        //setInterval(setCard,10000,{{P1_card}},{{P2_num}},{{P3_num}},{{P4_card}});
+        //setInterval(setDrag,10000);
+ 
     });
 </script>
 

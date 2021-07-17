@@ -108,10 +108,12 @@ def logout():
 def game():
     cookie_id=request.get_cookie('cookie_id', secret='key')
     roomPass=request.query.roomPass
+    times=request.query.times
     # roomPass='aaa' #/gameにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
     users = Users.objects(cookie=cookie_id)
     print("This is GET")
     print("roomPass = ", roomPass)
+    #print("times = ",times)
 
     if cookie_id==None or (not bool(users)) : # Cannot find the cookie
         return '''
@@ -127,15 +129,27 @@ def game():
         old_maid.sort_hands()
         old_maid.delete_cards()
 
-        #json_discard = json.dumps(old_maid.garbage)
-        #json_players = json.dumps(old_maid.hands)
+        #get user
+        thisUser = users[0].usernumber
+        print("usernumber: "+ str(thisUser))
 
-        P1_card = old_maid.dic[0]
-        P2_num = len(old_maid.dic[1])
-        P3_num = len(old_maid.dic[2])
-        P4_card = old_maid.dic[3]
+        #userによって、playerのカードを分配する
+        P1_card = old_maid.dic[thisUser]
+        P2_card = old_maid.dic[thisUser+1] if thisUser+1<4 else old_maid.dic[(thisUser+1)%4]
+        P3_card = old_maid.dic[thisUser+2] if thisUser+2<4 else old_maid.dic[(thisUser+2)%4]
+        P4_card = old_maid.dic[thisUser+3] if thisUser+3<4 else old_maid.dic[(thisUser+3)%4]
 
-        username = users[0].username
+        #このuserは既に勝った、自分のターンをパス
+        if old_maid.dic[thisUser] == [] and thisUser == turn.value:
+            print("Turn: ",turn.value)
+            turn.advance();
+
+        #自分のターンを確認する
+        isMyTurn = 1 if thisUser == turn.value else 0
+        print("Turn: " +str(turn.value))
+        print(isMyTurn)
+
+        username = []
 
         for doc in Rooms.objects:
             print("password: "+doc.password)
@@ -144,18 +158,34 @@ def game():
             if doc.password==roomPass: #部屋検索
                 doc.discard=old_maid.garbage
                 doc.players= list(old_maid.dic.values())
-                #doc.players=old_maid.dic
                 
-                print(doc.discard)
-                print(doc.players)
+                #print(doc.discard)
+                #print(doc.players)
                 pprint.pprint(old_maid.dic)
                 doc.save()
-                #return json.dumps(cards)
-                #discard=json.dumps(old_maid.garbage)
-                #players=json.dumps(old_maid.hands)
 
-                #return template('game.html')
-                return template('game.html', title='OLD MAID', username=username, P1_card=Markup(json.dumps(P1_card)), P2_num=P2_num, P3_num=P3_num, P4_card=Markup(json.dumps(P4_card)))
+                #userによって、usernameという配列が違い
+                size = 0
+                i = thisUser
+                while size<4:
+                    if i >3:
+                        i %= 4
+                    username.append(doc.player_names[i])
+                    size += 1
+                    i += 1
+                #print("username",username)
+
+                #始めのアクセス
+                if times == '0':
+                    return template('game.html', title='OLD MAID', username=username, P1_card=Markup(json.dumps(P1_card)), P2_card=Markup(json.dumps(P2_card)), P3_card=Markup(json.dumps(P3_card)), P4_card=Markup(json.dumps(P4_card)),isMyTurn=isMyTurn)
+                
+                #ajaxの回答
+                elif times == '1':
+                    newHand = {"0": Markup(json.dumps(P1_card)), "1": Markup(json.dumps(P2_card)), "2": Markup(json.dumps(P3_card)), "3": Markup(json.dumps(P4_card)), "4":isMyTurn, "5": old_maid.end_game()}
+                    res = bottle.HTTPResponse(body=newHand, status=200)
+                    res.set_header("Content-Type", "application/json")
+
+                    return res
 
         return '''
         <b>This roomPass is not registered.</b><br>
@@ -168,9 +198,11 @@ def game():
     print("This is POST")
     cookie_id = request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
-    usernumber = int(request.forms['getCardPlayer']);
+    roomPass=str(request.forms['roomPass'])
+    print(roomPass)
+    #usernumber = int(request.forms['getCardPlayer']);
     
-    print(usernumber)
+    print(users[0].usernumber)
     print(turn.value)
 
     if cookie_id==None or (not bool(users)) :
@@ -180,23 +212,29 @@ def game():
         <a href="/signup"><button>Signup</button></a>
         <a href="/logout"><button>Logout</button></a>
         '''
-    elif usernumber==turn.value:
-        username = users[0].username
-        #クライアントからjson形式のデータを受け取る
-        lossCardPlayer = int(request.forms['lossCardPlayer']);
+    elif users[0].usernumber==turn.value:
+
+        #誰のカードを引くかを決める
+        lossCardPlayer = users[0].usernumber-1 if users[0].usernumber-1>=0 else (users[0].usernumber-1)%4
+        print(len(old_maid.dic[lossCardPlayer]))
+        if len(old_maid.dic[lossCardPlayer]) == 0:
+            lossCardPlayer = users[0].usernumber-2 if users[0].usernumber-2>=0 else (users[0].usernumber-2)%4
+        if len(old_maid.dic[lossCardPlayer]) == 0:
+            lossCardPlayer = users[0].usernumber-3 if users[0].usernumber-3>=0 else (users[0].usernumber-3)%4
+
+        #postからのカードIDを受ける
         cards = int(request.forms['drawnCardID']);
+
+        old_maid.new_get_card_from_player(users[0].usernumber, lossCardPlayer, cards)
+        old_maid.check_win()
+
+        #print("end_game: ",old_maid.end_game())
+        #print("players: ",old_maid.players)
+        #print("winP: ",old_maid.winplayers)
+
         turn.advance()
-        #print(old_maid.hands)  
-        #pprint.pprint(old_maid.dic)
-        old_maid.new_get_card_from_player(usernumber, lossCardPlayer, cards);
-        #print(old_maid.hands)　変わっていない
-        #pprint.pprint(old_maid.dic)　変わった
-        return redirect('/game')
-    elif usernumber!=turn.value:
-        username = users[0].username
-        #print(username)
-        #return turn.value
-        return template('game.html', title='OLD_MAID', username=users[0].username, turn=turn.value)
+
+    return redirect('/game?roomPass='+roomPass)
 
 @get('/standby')
 def standby():
@@ -231,6 +269,7 @@ def standby():
             room = Rooms(password=roomPass, player_names=[users[0].username])
             room.save()
 
+            #users.usernumberを設定する
             myroom = Rooms.objects(password=roomPass)
             Users.objects(username= users[0].username).update_one(
                 set__usernumber = len(myroom[0].player_names)-1,
@@ -244,7 +283,8 @@ def standby():
                     if len(doc.player_names)<4 : # 部屋が4人未満か判定
                         doc.player_names.append(users[0].username) # プレイヤー名を追加
                         doc.save()
-                        
+
+                        #users.usernumberを設定する
                         myroom = Rooms.objects(password=roomPass)
                         Users.objects(username= users[0].username).update_one(
                                 set__usernumber = len(myroom[0].player_names)-1,
@@ -282,10 +322,12 @@ def standby():
                         body[str(i)] = player_name
             r = bottle.HTTPResponse(body=body, status=200)
             r.set_header("Content-Type", "application/json")
+            print("check")
             return r
         elif mode == 'reload':
             for doc in Rooms.objects :
                 if doc.password==roomPass :
+                    print("reload")
                     return template('standby.html', roomPass=roomPass, username=users[0].username, players=doc.player_names)
 
 
@@ -308,8 +350,9 @@ def home():
 def win():
     cookie_id = request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
-    #roomPass=request.query.decode().get('roomPass')
-    roomPass='aaa' #/winにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
+    roomPass=request.query.decode().get('roomPass')
+    print(roomPass)
+    #roomPass='aaa' #/winにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
 
     if cookie_id==None or (not bool(users)) : 
         return '''
@@ -319,17 +362,30 @@ def win():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
+        winner = ""
+        loser = ""
+        print(old_maid.winplayers)
         for doc in Rooms.objects:
             if doc.password==roomPass:
-                doc.delete()
-        return template('win.html', title='WIN')
+                for idx, players in enumerate(old_maid.winplayers):
+                    if idx == 2:
+                        winner += doc.player_names[players]
+                    else:
+                        winner += doc.player_names[players] + ','
+                    print(winner)
+                for idx, players in enumerate(doc.players):
+                    if players != []:
+                        loser = doc.player_names[idx]
+
+                #doc.delete()
+        return template('win.html', title='WIN', winner=winner, loser=loser)
 
 @get('/loss')
 def loss():
     cookie_id = request.get_cookie('cookie_id', secret='key')
     users = Users.objects(cookie=cookie_id)
-    #roomPass=request.query.decode().get('roomPass')
-    roomPass='aaa' #/lossにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
+    roomPass=request.query.decode().get('roomPass')
+    #roomPass='aaa' #/lossにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
 
     if cookie_id==None or (not bool(users)) : 
         return '''
@@ -339,10 +395,21 @@ def loss():
         <a href="/logout"><button>Logout</button></a>
         '''
     else:
+        winner = ""
+        loser = ""
         for doc in Rooms.objects:
             if doc.password==roomPass:
-                doc.delete()
-        return template('loss.html', title='LOSE')
+                for idx, players in enumerate(old_maid.winplayers):
+                    if idx == 2:
+                        winner += doc.player_names[players]
+                    else:
+                        winner += doc.player_names[players] + ','
+                for idx, players in enumerate(doc.players):
+                    if players != []:
+                        loser = doc.player_names[idx]
+
+                #doc.delete()
+        return template('loss.html', title='LOSE', winner=winner, loser=loser)
 
 
 if __name__ == '__main__':
