@@ -50,7 +50,10 @@ class Old_maid():
 
     #ゲーム終了かチェック
     def end_game(self):
+        print("players_len: ",len(self.winplayers))
         if self.get_all_num() == 1:
+            return 1
+        elif len(self.winplayers) == 3:
             return 1
         else:
              return 0

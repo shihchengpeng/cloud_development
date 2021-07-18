@@ -173,6 +173,36 @@ function setColor(isMyTurn)
     }
 }
 
+//buttonの設定
+function setBtn(isMyTurn)
+{
+    //console.log("isMyTurn: "+isMyTurn);
+    if(isMyTurn == 1)
+    {
+        $("#giveUp").prop('disabled', false);
+    }   
+    else
+    {
+        $("#giveUp").prop('disabled', true);
+    }
+}
+
+//sessionを更新して、setDropに行くの必要かをチェックする
+function setSession(isMyTurn)
+{
+    //console.log("isMyTurn: "+isMyTurn);
+    if(sessionStorage.getItem("lastDrop")!=isMyTurn && isMyTurn=="1")
+    {
+        console.log("go to setDrop");
+        sessionStorage.setItem("lastDrop", isMyTurn);
+        setDrop(isMyTurn);
+    }
+    else
+    {
+        sessionStorage.setItem("lastDrop", isMyTurn);
+    }
+}
+
 //カードを引いた後の動きを設定する
 function drawACard(index){
     //console.log(index);
@@ -235,9 +265,20 @@ function drawACard(index){
 function sendDrawnCard(index){
     $.post( "/game", {
         roomPass: room,
+        giveUp: "",
         drawnCardID: index.id.substr(index.id.length-1)-1
     });
 }
+
+function giveUp(){
+    $.post( "/game", {
+        roomPass: room,
+        giveUp:1,
+        drawnCardID:""
+    });
+    window.location.href = "/loss?roomPass=" + room;
+}
+
 
 function discardACard(index){
     index.remove();
@@ -249,10 +290,10 @@ function getRandom(min,max){
 
 //ゲームの完了を確認
 function checkEnd(endGame){
-    if(endGame=="1")
+    if(endGame=="1" || endGame=="2")
     {
         console.log(endGame);
-        if(P1_HandNow == 0)
+        if(P1_HandNow == 0 || endGame=="2")
         {
             console.log("P1win: "+P1_HandNow);
             window.location.href = "/win?roomPass=" + room;
@@ -275,20 +316,8 @@ function ajaxCall(){
         setColor(JSON.parse(jsonData[4]));
         setCard(JSON.parse(jsonData[0]),JSON.parse(jsonData[1]),JSON.parse(jsonData[2]),JSON.parse(jsonData[3]));
         setDrag();
-        console.log("lastDrop: "+sessionStorage.getItem("lastDrop"));
-        console.log("drop: "+JSON.parse(jsonData[4]));
-
-        if(sessionStorage.getItem("lastDrop")!=JSON.parse(jsonData[4]) && JSON.parse(jsonData[4])=="1")
-        {
-            console.log("go to setDrop");
-            sessionStorage.setItem("lastDrop", JSON.parse(jsonData[4]));
-            setDrop(JSON.parse(jsonData[4]));
-        }
-        else
-        {
-            sessionStorage.setItem("lastDrop", JSON.parse(jsonData[4]));
-        }
-
+        setBtn(JSON.parse(jsonData[4]));
+        setSession(JSON.parse(jsonData[4]))
         checkEnd(JSON.parse(jsonData[5]));
     }
   };

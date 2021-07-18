@@ -106,13 +106,14 @@ def logout():
 
 @get('/game')
 def game():
+    times=request.query.times
     cookie_id=request.get_cookie('cookie_id', secret='key')
     roomPass=request.query.roomPass
-    times=request.query.times
     # roomPass='aaa' #/gameにアクセスするときにroomPassが必要です(一旦'aaa'にしています)
     users = Users.objects(cookie=cookie_id)
     print("This is GET")
     print("roomPass = ", roomPass)
+    print("end_game: ",old_maid.end_game())
     #print("times = ",times)
 
     if cookie_id==None or (not bool(users)) : # Cannot find the cookie
@@ -150,19 +151,27 @@ def game():
         print(isMyTurn)
 
         username = []
-
-        for doc in Rooms.objects:
-            print("password: "+doc.password)
+        giveUp = 0
+        end_game = 0
 
         for doc in Rooms.objects:
             if doc.password==roomPass: #部屋検索
-                doc.discard=old_maid.garbage
-                doc.players= list(old_maid.dic.values())
-                
-                #print(doc.discard)
-                #print(doc.players)
-                pprint.pprint(old_maid.dic)
+                #doc.discard=old_maid.garbage
+                if old_maid.end_game() == 1:
+                    for card in doc.players:
+                        if ["giveUp",-1] in card:
+                            giveUp = 1
+                    if giveUp == 1 :
+                        end_game = 2
+                    else:
+                        end_game = 1
+
+                if end_game != 2:
+                    doc.players= list(old_maid.dic.values())
                 doc.save()
+
+                print("docP: ",doc.players)
+                pprint.pprint(old_maid.dic)
 
                 #userによって、usernameという配列が違い
                 size = 0
@@ -181,7 +190,7 @@ def game():
                 
                 #ajaxの回答
                 elif times == '1':
-                    newHand = {"0": Markup(json.dumps(P1_card)), "1": Markup(json.dumps(P2_card)), "2": Markup(json.dumps(P3_card)), "3": Markup(json.dumps(P4_card)), "4":isMyTurn, "5": old_maid.end_game()}
+                    newHand = {"0": Markup(json.dumps(P1_card)), "1": Markup(json.dumps(P2_card)), "2": Markup(json.dumps(P3_card)), "3": Markup(json.dumps(P4_card)), "4":isMyTurn, "5": end_game}
                     res = bottle.HTTPResponse(body=newHand, status=200)
                     res.set_header("Content-Type", "application/json")
 
@@ -213,28 +222,44 @@ def game():
         <a href="/logout"><button>Logout</button></a>
         '''
     elif users[0].usernumber==turn.value:
+        #give up
+        print("giveUp: ",request.forms['giveUp'])
+        if request.forms['giveUp'] != "":
+            giveUp_players = [[],[],[],[]]
+            Rooms.objects(password=roomPass).update_one(
+                players = giveUp_players,
+                upsert = False)
 
-        #誰のカードを引くかを決める
-        lossCardPlayer = users[0].usernumber-1 if users[0].usernumber-1>=0 else (users[0].usernumber-1)%4
-        print(len(old_maid.dic[lossCardPlayer]))
-        if len(old_maid.dic[lossCardPlayer]) == 0:
-            lossCardPlayer = users[0].usernumber-2 if users[0].usernumber-2>=0 else (users[0].usernumber-2)%4
-        if len(old_maid.dic[lossCardPlayer]) == 0:
-            lossCardPlayer = users[0].usernumber-3 if users[0].usernumber-3>=0 else (users[0].usernumber-3)%4
+            for doc in Rooms.objects:
+                if doc.password==roomPass:
+                    for idx,players in enumerate(old_maid.players):
+                        if idx != users[0].usernumber:
+                            old_maid.winplayers.append(players)
+                        else:
+                            doc.players[idx].append(["giveUp",-1])
+                    doc.save()
 
         #postからのカードIDを受ける
-        cards = int(request.forms['drawnCardID']);
+        elif request.forms['drawnCardID'] != "":
 
-        old_maid.new_get_card_from_player(users[0].usernumber, lossCardPlayer, cards)
-        old_maid.check_win()
+            #誰のカードを引くかを決める
+            lossCardPlayer = users[0].usernumber-1 if users[0].usernumber-1>=0 else (users[0].usernumber-1)%4
+            print(len(old_maid.dic[lossCardPlayer]))
+            if len(old_maid.dic[lossCardPlayer]) == 0:
+                lossCardPlayer = users[0].usernumber-2 if users[0].usernumber-2>=0 else (users[0].usernumber-2)%4
+            if len(old_maid.dic[lossCardPlayer]) == 0:
+                lossCardPlayer = users[0].usernumber-3 if users[0].usernumber-3>=0 else (users[0].usernumber-3)%4
 
-        #print("end_game: ",old_maid.end_game())
-        #print("players: ",old_maid.players)
-        #print("winP: ",old_maid.winplayers)
+            cards = int(request.forms['drawnCardID']);
+            old_maid.new_get_card_from_player(users[0].usernumber, lossCardPlayer, cards)
+            old_maid.check_win()
+
+            #print("end_game: ",old_maid.end_game())
+            #print("players: ",old_maid.players)
+            #print("winP: ",old_maid.winplayers)
 
         turn.advance()
-
-    return redirect('/game?roomPass='+roomPass)
+        return redirect('/game?roomPass='+roomPass)
 
 @get('/standby')
 def standby():
@@ -378,6 +403,7 @@ def win():
                         loser = doc.player_names[idx]
 
                 #doc.delete()
+                #playAgain = "/game?"+roomPass+"&times=0"
         return template('win.html', title='WIN', winner=winner, loser=loser)
 
 @get('/loss')
@@ -414,6 +440,5 @@ def loss():
 
 if __name__ == '__main__':
     turn = Turn()
-    #old_maid = deck.Old_maid(4)
     old_maid = deck_queue.Old_maid(4)
     run(host='0.0.0.0', port=8082, reloader=True, debug=True)
