@@ -104,7 +104,7 @@
                         // 人数が４人になった場合
                         else if (Object.keys(JSON.parse(response)).length == 4){
                             console.log(data["roomPass"])
-                            window.location.href = "/game?roomPass=" + data["roomPass"]
+                            window.location.href = "/game?roomPass=" + data["roomPass"] + "&times=0"
                         }
                     }
                 });
