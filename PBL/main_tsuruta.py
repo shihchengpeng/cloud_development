@@ -441,4 +441,4 @@ def loss():
 if __name__ == '__main__':
     turn = Turn()
     old_maid = deck_queue.Old_maid(4)
-    run(host='0.0.0.0', port=8082, reloader=True, debug=True)
+    run(host='0.0.0.0', port=8082, reloader=True, debug=True, server='paste')
