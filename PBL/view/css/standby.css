@@ -1,0 +1,76 @@
+html {
+    width: 100%;
+    height: 100%;
+}
+body {
+    width: 100%;
+    height: 100%;
+    background-color: rgb(230, 230, 230);
+}
+#headerBar {
+    width: 100%;
+    height: 15%;
+}
+#headerText {
+    position: absolute;
+    bottom: -1.8vh;
+    font-size: 8vh;
+    margin: 0px;
+    padding: 0px;
+}
+
+#main {
+    position: absolute;
+    top: 22.5%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgb(245, 245, 245);
+    height: 70%;
+    width: 70vmin;
+    box-shadow: 15px 15px 15px -5px rgb(160, 160, 160);
+    padding:0px;
+}
+h5 {
+    font-size: 6vh;
+}
+.index-box {
+    position: absolute;
+    width: 60%;
+    top: 23%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin:0px;
+}
+.index {
+    margin-bottom: 8.5vh;
+}
+.players-box {
+    position: absolute;
+    width: 60%;
+    top: 23%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin:0px;
+}
+.players {
+    margin-bottom: 8.5vh;
+    text-align: center;
+}
+h1 {
+    font-size: 4vh
+}
+
+.return-button {
+    border: none;
+    background-color: transparent;
+    position: absolute;
+    bottom: 7.5%;
+    left: calc(50% - 45vmin);
+    transform: translateX(-50%);
+    width: 10%;
+    font-size: 2vw;
+}
+.return-svg {
+    width: 20%;
+    height: auto;
+}
