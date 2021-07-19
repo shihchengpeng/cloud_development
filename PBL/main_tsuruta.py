@@ -233,15 +233,20 @@ def game():
             Rooms.objects(password=roomPass).update_one(
                 players = giveUp_players,
                 upsert = False)
+            #old_maid.winplayers.clear()
+
+            print(old_maid.players)
 
             for doc in Rooms.objects:
                 if doc.password==roomPass:
-                    for idx,players in enumerate(old_maid.players):
-                        if idx != users[0].usernumber:
+                    for players in old_maid.players:
+                        if players != users[0].usernumber:
                             old_maid.winplayers.append(players)
                         else:
-                            doc.players[idx].append(["giveUp",-1])
+                            doc.players[players].append(["giveUp",-1])    
                     doc.save()
+
+                print(doc.players)
 
         #postからのカードIDを受ける
         elif request.forms['drawnCardID'] != "":
@@ -257,10 +262,6 @@ def game():
             cards = int(request.forms['drawnCardID']);
             old_maid.new_get_card_from_player(users[0].usernumber, lossCardPlayer, cards)
             old_maid.check_win()
-
-            #print("end_game: ",old_maid.end_game())
-            #print("players: ",old_maid.players)
-            #print("winP: ",old_maid.winplayers)
 
         turn.advance()
         return redirect('/game?roomPass='+roomPass)
@@ -417,7 +418,6 @@ def win():
     else:
         winner = ""
         loser = ""
-        print(old_maid.winplayers)
         for doc in Rooms.objects:
             if doc.password==roomPass:
                 for idx, players in enumerate(old_maid.winplayers):
@@ -425,10 +425,11 @@ def win():
                         winner += doc.player_names[players]
                     else:
                         winner += doc.player_names[players] + ','
-                    print(winner)
                 for idx, players in enumerate(doc.players):
                     if players != []:
                         loser = doc.player_names[idx]
+        print(winner)
+        print(loser)
 
                 #doc.delete()
                 #playAgain = "/game?"+roomPass+"&times=0"
@@ -461,6 +462,8 @@ def loss():
                 for idx, players in enumerate(doc.players):
                     if players != []:
                         loser = doc.player_names[idx]
+        print(winner)
+        print(loser)
 
                 #doc.delete()
         return template('loss.html', title='LOSE', winner=winner, loser=loser)

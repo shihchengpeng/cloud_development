@@ -12,7 +12,6 @@ var P4_HandNow = 0;
 
 //みんなの手札を設定する
 function setCard(P1_card, P2_card, P3_card, P4_card){
-    console.log("setCard");
     P1_HandNow = Object.keys(P1_card).length;
     P2_HandNow = Object.keys(P2_card).length;
     P3_HandNow = Object.keys(P3_card).length;
@@ -118,7 +117,7 @@ function setDrag()
 //どこにカードを置かれることを設定する
 function setDrop(isMyTurn)
 {
-    console.log("isMyTurn: "+isMyTurn);
+    //console.log("isMyTurn: "+isMyTurn);
     if(isMyTurn == 1)
     {
         $( "#handcard1" ).droppable({
@@ -129,7 +128,7 @@ function setDrop(isMyTurn)
                 drawACard($(ui.draggable).get(0));
             }
         });
-
+/*
         console.log("set droppable");
 
         //時間内にカードを引かない場合、自動に引く(バグが起こる)
@@ -147,7 +146,7 @@ function setDrop(isMyTurn)
             max = P2_HandNow;
             from = '2';
         }
-/*
+
         var myTimeout = setTimeout(function () {
             var index = getRandom(1,max);
             var randomCard = $("#poker"+from+"_"+index);
@@ -205,9 +204,6 @@ function setSession(isMyTurn)
 
 //カードを引いた後の動きを設定する
 function drawACard(index){
-    //console.log(index);
-    //console.log(typeof(index));
-
     //誰のカードを引くかを確認する
     var from_arr = new Array();
     if(P4_HandNow != 0)
@@ -222,9 +218,6 @@ function drawACard(index){
     {
         from_arr = P2_arr;
     }
-
-    console.log(index);
-    console.log(typeof(index));
 
     //引かれたカードを削除する
     index.remove();
@@ -242,8 +235,6 @@ function drawACard(index){
     for(var i=1;i<=P1_HandNow;i++)
     {
         if(P1_arr[i].length==from_arr[index.id.substr(index.id.length-1)].length)
-            //alert(P1_arr[i].substring(0,P1_arr[i].length-1));
-            //alert(P4_arr[index.id.substr(index.id.length-1)].substring(0,P4_arr[index.id.substr(index.id.length-1)].length-1));
             if(P1_arr[i].substring(0,P1_arr[i].length-1)==from_arr[index.id.substr(index.id.length-1)].substring(0,from_arr[index.id.substr(index.id.length-1)].length-1))
             {
                 gotPair=1;
@@ -276,7 +267,10 @@ function giveUp(){
         giveUp:1,
         drawnCardID:""
     });
-    window.location.href = "/loss?roomPass=" + room;
+
+    setTimeout(function () {
+            window.location.href = "/loss?roomPass=" + room;
+    }, 500);
 }
 
 
