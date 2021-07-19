@@ -43,6 +43,10 @@ def send_static(filename):
 def send_static(filename):
     return static_file(filename, root='./view/images')
 
+@route('/css/<filename:path>')
+def send_static(filename):
+    return static_file(filename, root='./view/css')
+
 @get('/')
 @get('/signup')
 def index():
@@ -355,6 +359,30 @@ def standby():
                     print("reload")
                     return template('standby.html', roomPass=roomPass, username=users[0].username, players=doc.player_names)
 
+# @post('/home')
+# def home():
+#     cookie_id = request.get_cookie('cookie_id', secret='key')
+#     users = Users.objects(cookie=cookie_id)
+#     roomPass = request.forms.decode().get('roomPass')
+
+#     if cookie_id==None or (not bool(users)) : 
+#         return '''
+#         <b>Not login Error.</b>'
+#         <a href="/login"><button>Login</button></a>
+#         <a href="/signup"><button>Signup</button></a>
+#         <a href="/logout"><button>Logout</button></a>
+#         '''
+#     else:
+#         for doc in Rooms.objects :
+#             if doc.password==roomPass:
+#                 name_list = list(doc.player_names)
+#                 # バグで名前が複数ある場合に対応
+#                 while users[0].username in name_list:
+#                     name_list.remove(users[0].username)
+#                 doc.player_names = name_list
+#                 doc.save()
+                
+#         return template('home.html', isLogin=True, name=users[0].username)
 
 @get('/home')
 def home():
