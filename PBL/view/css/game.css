@@ -1,0 +1,29 @@
+html{
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+body{
+    height: 100%;
+    width: 100%;
+    position: relative;
+    background-image: url('../images/background.svg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    display: flex;
+    flex-direction: column;
+}
+
+.old_maid {
+    margin: 0px;
+    padding: 0px;
+    flex-grow: 1;
+    position: relative;
+    padding: 0px;
+}
+
+.jokerImg {
+    fill:rgb(40,40,40);
+}
