@@ -123,7 +123,7 @@ def game():
     if cookie_id==None or (not bool(users)) : # Cannot find the cookie
         return '''
         <b>Not login Error.</b>
-        <a href="/mypage"><button>Go to My page</button></a>
+        <a href="/home"><button>Home</button></a>
         <a href="/login"><button>Login</button></a>
         <a href="/signup"><button>Signup</button></a>
         <a href="/logout"><button>Logout</button></a>
@@ -147,7 +147,7 @@ def game():
         #このuserは既に勝った、自分のターンをパス
         if old_maid.dic[thisUser] == [] and thisUser == turn.value:
             print("Turn: ",turn.value)
-            turn.advance();
+            turn.advance()
 
         #自分のターンを確認する
         isMyTurn = 1 if thisUser == turn.value else 0
