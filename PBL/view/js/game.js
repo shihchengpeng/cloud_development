@@ -289,12 +289,12 @@ function checkEnd(endGame){
         console.log(endGame);
         if(P1_HandNow == 0 || endGame=="2")
         {
-            console.log("P1win: "+P1_HandNow);
+            //console.log("P1win: "+P1_HandNow);
             window.location.href = "/win?roomPass=" + room;
         }
         else
         {
-            console.log("P1loss: "+P1_HandNow);
+            //console.log("P1loss: "+P1_HandNow);
             window.location.href = "/loss?roomPass=" + room;
         }
     }
