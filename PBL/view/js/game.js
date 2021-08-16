@@ -24,12 +24,8 @@ function setCard(P1_card, P2_card, P3_card, P4_card){
 
     for(var i=0;i<P1_HandNow;i++)
     {
-        var card = JSON.stringify(P1_card[i][1])[1];
-
-        if($.isNumeric(JSON.stringify(P1_card[i][1])[2]))
-            card += JSON.stringify(P1_card[i][1])[2];
-      
-        card += JSON.stringify(P1_card[i][0])[1].toUpperCase() 
+        //配列によって、全ての手札の名前を取得する
+        var card = P1_card[i][1] + P1_card[i][0][0].toUpperCase();
 
         //カードを配列に保存する
         P1_arr[i+1] = card;
@@ -41,12 +37,7 @@ function setCard(P1_card, P2_card, P3_card, P4_card){
 
     for(var i=0;i<P2_HandNow;i++)
     {
-        var card = JSON.stringify(P2_card[i][1])[1];
-
-        if($.isNumeric(JSON.stringify(P2_card[i][1])[2]))
-            card += JSON.stringify(P2_card[i][1])[2];
-      
-        card += JSON.stringify(P2_card[i][0])[1].toUpperCase();
+        var card = P2_card[i][1] + P2_card[i][0][0].toUpperCase();
 
         //カードを配列に保存する
         P2_arr[i+1] = card;
@@ -55,12 +46,7 @@ function setCard(P1_card, P2_card, P3_card, P4_card){
     
     for(var i=0;i<P3_HandNow;i++)
     {
-        var card = JSON.stringify(P3_card[i][1])[1];
-
-        if($.isNumeric(JSON.stringify(P3_card[i][1])[2]))
-            card += JSON.stringify(P3_card[i][1])[2];
-      
-        card += JSON.stringify(P3_card[i][0])[1].toUpperCase();
+        var card = P3_card[i][1] + P3_card[i][0][0].toUpperCase();
 
         //カードを配列に保存する
         P3_arr[i+1] = card;
@@ -69,12 +55,7 @@ function setCard(P1_card, P2_card, P3_card, P4_card){
 
     for(var i=0;i<P4_HandNow;i++)
     {
-        var card = JSON.stringify(P4_card[i][1])[1];
-
-        if($.isNumeric(JSON.stringify(P4_card[i][1])[2]))
-            card += JSON.stringify(P4_card[i][1])[2];
-      
-        card += JSON.stringify(P4_card[i][0])[1].toUpperCase();
+        var card = P4_card[i][1] + P4_card[i][0][0].toUpperCase();
 
         //カードを配列に保存する
         P4_arr[i+1] = card;
@@ -306,6 +287,8 @@ function ajaxCall(){
   req.open('GET', '/game?roomPass='+room+'&times=1');
   req.onreadystatechange = function () {
     if (req.readyState === 4) {
+        //jsonData -> object jsonData[0] -> string JSON.parse(jsonData[0]) -> object 2D array
+        //stringからobjectに変更する
         var jsonData = JSON.parse(req.responseText);
         setColor(JSON.parse(jsonData[4]));
         setCard(JSON.parse(jsonData[0]),JSON.parse(jsonData[1]),JSON.parse(jsonData[2]),JSON.parse(jsonData[3]));

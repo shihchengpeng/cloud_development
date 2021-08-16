@@ -2,7 +2,6 @@ from ast import Str
 import bottle, jinja2
 from bottle import *
 from bottle import jinja2_template as template
-from jinja2 import Markup
 from mongoengine import connect, Document, ListField, StringField, URLField, IntField, queryset
 import random
 import json
@@ -138,7 +137,7 @@ def game():
         thisUser = users[0].usernumber
         print("usernumber: "+ str(thisUser))
 
-        #userによって、playerのカードを分配する
+        #userによって、playerのカードを分配する 
         P1_card = old_maid.dic[thisUser]
         P2_card = old_maid.dic[thisUser+1] if thisUser+1<4 else old_maid.dic[(thisUser+1)%4]
         P3_card = old_maid.dic[thisUser+2] if thisUser+2<4 else old_maid.dic[(thisUser+2)%4]
@@ -190,11 +189,13 @@ def game():
 
                 #始めのアクセス
                 if times == '0':
-                    return template('game.html', title='OLD MAID', username=username, P1_card=Markup(json.dumps(P1_card)), P2_card=Markup(json.dumps(P2_card)), P3_card=Markup(json.dumps(P3_card)), P4_card=Markup(json.dumps(P4_card)),isMyTurn=isMyTurn)
+                    #json.dumpsを使って、listからjson strにする
+                    return template('game.html', title='OLD MAID', username=username, P1_card=json.dumps(P1_card), P2_card=json.dumps(P2_card), P3_card=json.dumps(P3_card), P4_card=json.dumps(P4_card),isMyTurn=isMyTurn)
                 
                 #ajaxの回答
                 elif times == '1':
-                    newHand = {"0": Markup(json.dumps(P1_card)), "1": Markup(json.dumps(P2_card)), "2": Markup(json.dumps(P3_card)), "3": Markup(json.dumps(P4_card)), "4":isMyTurn, "5": end_game}
+                    newHand = {"0": json.dumps(P1_card), "1": json.dumps(P2_card), "2": json.dumps(P3_card), "3": json.dumps(P4_card), "4":isMyTurn, "5": end_game}
+                    print(type(newHand))
                     res = bottle.HTTPResponse(body=newHand, status=200)
                     res.set_header("Content-Type", "application/json")
 
